@@ -1,0 +1,22 @@
+# dependencias
+node_modules/
+.pnpm-store/
+
+# build
+dist/
+.output/
+build/
+
+# entorno
+.env
+.env.local
+.env.*.local
+
+# sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# editor
+.vscode/
+.idea/
