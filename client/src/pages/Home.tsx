@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { generateLocalComposition, type StudioAspect } from "../lib/local-composition";
 import {
   Aperture,
   ArrowDownToLine,
@@ -103,31 +104,46 @@ export default function Home() {
   const [mode, setMode] = useState<Mode>("Imagen");
   const [prompt, setPrompt] = useState("Un paisaje de montaña flotando sobre un mar de nubes, luz de amanecer...");
   const [style, setStyle] = useState("Auto");
-  const [aspect, setAspect] = useState("16:9");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedAt, setGeneratedAt] = useState("Generación local lista");
+  const [aspect, setAspect] = useState<StudioAspect>("16:9");
+  const [composition, setComposition] = useState({
+    prompt: "Un paisaje de montaña flotando sobre un mar de nubes, luz de amanecer...",
+    style: "Auto", aspect: "16:9" as StudioAspect, variation: 0,
+  });
+  const [generatedAt, setGeneratedAt] = useState("Composición SVG local lista");
   const [showMore, setShowMore] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [activeRail, setActiveRail] = useState("create");
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedPalette = palettes[style];
+  const svgMarkup = useMemo(() => generateLocalComposition({
+    ...composition, palette: palettes[composition.style] ?? palettes.Auto,
+  }), [composition]);
+  const previewUrl = useMemo(
+    () => "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svgMarkup),
+    [svgMarkup],
+  );
+  useEffect(() => () => {
+    if (uploadedImage) URL.revokeObjectURL(uploadedImage);
+  }, [uploadedImage]);
 
   const compositionStyle = useMemo(() => ({
     background: `radial-gradient(circle at 72% 24%, ${selectedPalette.accent}55 0 9%, transparent 31%), radial-gradient(circle at 20% 82%, ${selectedPalette.end}77 0 3%, transparent 28%), linear-gradient(135deg, ${selectedPalette.start}, ${selectedPalette.end})`,
   }), [selectedPalette]);
 
   const runGeneration = () => {
+    if (mode !== "Imagen") {
+      toast.error("Esta versión crea composiciones SVG de imagen, no vídeo ni audio.");
+      return;
+    }
     if (!prompt.trim()) {
       toast.error("Escribe una indicación para comenzar");
       return;
     }
-    setIsGenerating(true);
-    setGeneratedAt("Construyendo composición local…");
-    window.setTimeout(() => {
-      setIsGenerating(false);
-      setGeneratedAt(`Variación creada · ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
-      toast.success("Composición creada sin conexión a APIs");
-    }, 760);
+    setComposition(previous => ({
+      prompt: prompt.trim(), style, aspect, variation: previous.variation + 1,
+    }));
+    setGeneratedAt(`SVG generado en este dispositivo · ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
+    toast.success("Composición SVG creada y lista para exportar");
   };
 
   const chooseAction = (action: ActionKey) => {
@@ -152,15 +168,16 @@ export default function Home() {
   };
 
   const downloadComposition = () => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900"><defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${selectedPalette.start}"/><stop offset="1" stop-color="${selectedPalette.end}"/></linearGradient><radialGradient id="glow"><stop stop-color="${selectedPalette.accent}" stop-opacity=".95"/><stop offset="1" stop-color="${selectedPalette.accent}" stop-opacity="0"/></radialGradient></defs><rect width="1600" height="900" fill="url(#bg)"/><circle cx="1160" cy="260" r="420" fill="url(#glow)" opacity=".68"/><circle cx="270" cy="780" r="250" fill="${selectedPalette.end}" opacity=".52"/><path d="M500 900C660 690 720 530 910 370C1050 252 1250 190 1600 90V900Z" fill="${selectedPalette.accent}" opacity=".12"/><text x="86" y="770" font-family="Georgia, serif" font-size="46" fill="white" opacity=".92">${prompt.replace(/[&<>]/g, "").slice(0, 54)}</text><text x="88" y="820" font-family="Arial, sans-serif" font-size="18" letter-spacing="3" fill="white" opacity=".6">LUMEN LOCAL · ${style.toUpperCase()}</text></svg>`;
-    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const blob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = "lumen-local-composicion.svg";
+    document.body.append(anchor);
     anchor.click();
-    URL.revokeObjectURL(url);
-    toast.success("Composición descargada");
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast.success("Archivo SVG generado descargado");
   };
 
   return (
