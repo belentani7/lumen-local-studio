@@ -77,9 +77,9 @@ const inspirations = [
 ];
 
 const recentPrompts = [
-  { title: "Jardín de medianoche", meta: "hace 2 min", style: "Nocturno", filter: "hue-rotate(18deg) saturate(1.35)" },
-  { title: "Estudio de cerámica", meta: "ayer", style: "Editorial", filter: "sepia(.22) saturate(.9)" },
-  { title: "Horizonte líquido", meta: "ayer", style: "Luminoso", filter: "hue-rotate(155deg) saturate(1.25)" },
+  { title: "Jardín de medianoche", meta: "Ejemplo local", style: "Nocturno", filter: "hue-rotate(18deg) saturate(1.35)" },
+  { title: "Estudio de cerámica", meta: "Ejemplo local", style: "Editorial", filter: "sepia(.22) saturate(.9)" },
+  { title: "Horizonte líquido", meta: "Ejemplo local", style: "Luminoso", filter: "hue-rotate(155deg) saturate(1.25)" },
 ];
 
 function BrandMark() {
@@ -303,8 +303,8 @@ export default function Home() {
         </section>
 
         <section className="recent-section">
-          <div className="section-heading"><div><span className="section-kicker">05 / RECIENTE</span><h2>Vuelve a tus ideas</h2></div><button className="view-all" onClick={() => toast("Biblioteca local · próximamente")}>Ver biblioteca <ArrowUpRight size={15} /></button></div>
-          <div className="recent-grid">{recentPrompts.map((item) => <button className="recent-card" key={item.title} onClick={() => { setPrompt(item.title); setStyle(item.style); }}><div className="recent-thumb" style={{ filter: item.filter, backgroundImage: "url('/manus-storage/lumen-hero_f3544468.jpg')" }}><span>{item.style}</span></div><div className="recent-meta"><strong>{item.title}</strong><span>{item.meta}</span><Copy size={14} /></div></button>)}</div>
+          <div className="section-heading"><div><span className="section-kicker">05 / IDEAS</span><h2>Prompts de ejemplo para explorar</h2></div><button className="view-all" onClick={() => toast("Biblioteca local · próximamente")}>Ver biblioteca <ArrowUpRight size={15} /></button></div>
+          <div className="recent-grid">{recentPrompts.map((item) => <button className="recent-card" key={item.title} onClick={() => { setPrompt(item.title); setStyle(item.style); }}><div className="recent-thumb" style={{ filter: item.filter, backgroundImage: `linear-gradient(135deg, ${palettes[item.style].start}, ${palettes[item.style].end})` }}><span>{item.style}</span></div><div className="recent-meta"><strong>{item.title}</strong><span>{item.meta}</span><Copy size={14} /></div></button>)}</div>
         </section>
 
         <footer className="footer"><div className="footer-brand"><BrandMark /><span>Lumen Local Studio</span></div><span>Creado para explorar. Sin cuenta · sin API · sin enviar tus datos.</span><span>v0.1.0</span></footer>
