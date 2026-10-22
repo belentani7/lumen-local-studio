@@ -28,6 +28,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: TypeScript
         run: pnpm run check
+      - name: Offline SVG engine and UI contract tests
+        run: pnpm run test
       - name: Production build
         run: pnpm run build
       - name: Verify browser and server artifacts
