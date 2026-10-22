@@ -213,7 +213,7 @@ export default function Home() {
             <p>Explora una idea, dale forma y llévala a tu lienzo. Todo sucede en tu navegador.</p>
           </div>
           <div className="hero-visual" aria-hidden="true">
-            <img src="/manus-storage/lumen-hero_f3544468.jpg" alt="" />
+            <img src={previewUrl} alt="" />
             <div className="hero-visual-label"><span>01</span><span>Materia / luz / forma</span></div>
           </div>
         </section>
@@ -235,9 +235,9 @@ export default function Home() {
                 <span className="tool-separator" />
                 <button className="ghost-tool" onClick={() => setShowMore((value) => !value)}><MoreHorizontal size={17} /> <span>Más</span></button>
               </div>
-              <button className="generate-button" onClick={runGeneration} disabled={isGenerating}>
-                {isGenerating ? <span className="loader" /> : <Sparkles size={17} />}
-                {isGenerating ? "Creando" : "Generar"}
+              <button className="generate-button" onClick={runGeneration}>
+                <Sparkles size={17} />
+                Generar SVG
                 <span className="button-arrow">↗</span>
               </button>
             </div>
@@ -266,15 +266,11 @@ export default function Home() {
           </div>
           <div className="canvas-layout">
             <div className="canvas-frame">
-              <div className={`canvas-art ${isGenerating ? "is-generating" : ""}`} style={compositionStyle}>
-                <div className="art-grain" />
-                <div className="art-orb art-orb-one" />
-                <div className="art-orb art-orb-two" />
-                <div className="art-ribbon ribbon-one" />
-                <div className="art-ribbon ribbon-two" />
+              <div className="canvas-art" style={compositionStyle}>
+                <img src={previewUrl} alt={"Composición vectorial generada: " + composition.prompt}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain" }} />
                 {uploadedImage && <img src={uploadedImage} className="uploaded-overlay" alt="Imagen cargada" />}
-                <div className="canvas-caption"><span>Composición 01</span><span>{aspect} · {style}</span></div>
-                <div className="canvas-center-note"><Sparkles size={18} /><span>{isGenerating ? "Variando la atmósfera" : "Composición local"}</span></div>
+                <div className="canvas-caption"><span>Vector local · {composition.variation + 1}</span><span>{composition.aspect} · {composition.style}</span></div>
               </div>
               <div className="canvas-toolbar">
                 <div className="toolbar-left"><button className="tool-icon active" aria-label="Seleccionar"><MousePointer2 size={16} /></button><button className="tool-icon" aria-label="Recortar" onClick={() => toast("Recorte local · próximamente")}><Crop size={16} /></button><button className="tool-icon" aria-label="Capas" onClick={() => toast("Capas locales · próximamente")}><Layers3 size={16} /></button></div>
@@ -291,7 +287,7 @@ export default function Home() {
                 <div className="control-label"><span>Proporción</span><Crop size={15} /></div>
                 <div className="aspect-grid">{["1:1", "4:5", "16:9", "9:16"].map((item) => <button key={item} className={`aspect-chip ${aspect === item ? "selected" : ""}`} onClick={() => setAspect(item)}><span className={`aspect-shape ratio-${item.replace(":", "-")}`} />{item}</button>)}</div>
               </div>
-              <div className="local-note"><Lightbulb size={16} /><span><strong>Motor local</strong> · esta demo crea variaciones visuales directamente en tu navegador.</span></div>
+              <div className="local-note"><Lightbulb size={16} /><span><strong>Motor local</strong> · esta versión genera una composición SVG real sin red. Las imágenes importadas sirven de referencia y no se incluyen en la exportación.</span></div>
             </aside>
           </div>
         </section>
