@@ -1,22 +1,36 @@
-name: CI
+name: Lumen Local Studio / quality
+
 on:
   push:
-    branches: [main]
+    branches: [main, "factory/**"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+          run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
-      - run: pnpm install --no-frozen-lockfile
-      - run: pnpm run lint --if-present
-      - run: pnpm run build --if-present
-      - run: pnpm test --if-present
+          node-version: "22"
+          cache: pnpm
+      - name: Reproducible install
+        run: pnpm install --frozen-lockfile
+      - name: TypeScript
+        run: pnpm run check
+      - name: Production build
+        run: pnpm run build
+      - name: Verify browser and server artifacts
+        run: |
+          test -s dist/public/index.html
+          test -s dist/index.js
