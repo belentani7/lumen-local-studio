@@ -203,9 +203,9 @@ export default function Home() {
       <aside id="lumen-primary-nav" ref={railRef} aria-label="Navegación principal" className={`app-rail ${mobileNavOpen ? "is-open" : ""}`}>
         <div className="rail-brand"><BrandMark /></div>
         <div className="rail-group">
-          <AppIcon icon={Sparkles} label="Crear" active={activeRail === "create"} onClick={() => { setActiveRail("create"); setMobileNavOpen(false); document.getElementById("prompt-box")?.scrollIntoView({ behavior: "auto" }); }} />
+          <AppIcon icon={Sparkles} label="Crear" active={activeRail === "create"} onClick={() => { setActiveRail("create"); setMobileNavOpen(false); document.getElementById("prompt-box")?.scrollIntoView({ behavior: "auto" }); document.getElementById("prompt-box")?.focus(); }} />
           <AppIcon icon={Images} label="Mis creaciones" active={activeRail === "library"} onClick={() => { setMobileNavOpen(false); toast("La biblioteca local todavía no está disponible"); }} />
-          <AppIcon icon={Grid2X2} label="Inspiración" active={activeRail === "inspire"} onClick={() => { setActiveRail("inspire"); setMobileNavOpen(false); document.getElementById("inspiration")?.scrollIntoView({ behavior: "auto" }); }} />
+          <AppIcon icon={Grid2X2} label="Inspiración" active={activeRail === "inspire"} onClick={() => { setActiveRail("inspire"); setMobileNavOpen(false); document.getElementById("inspiration")?.scrollIntoView({ behavior: "auto" }); document.getElementById("inspiration")?.focus(); }} />
         </div>
         <div className="rail-bottom">
           <AppIcon icon={Settings2} label="Ajustes" onClick={() => toast("Ajustes locales · próximamente")} />
@@ -236,7 +236,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="workspace-section" id="prompt-box">
+        <section className="workspace-section" id="prompt-box" tabIndex={-1}>
           <div className="section-heading">
             <div>
               <span className="section-kicker">01 / IDEA</span>
@@ -251,7 +251,7 @@ export default function Home() {
                 <input ref={inputRef} type="file" accept="image/*" onChange={handleUpload} className="sr-only" />
                 <button className="ghost-tool" onClick={() => inputRef.current?.click()}><Upload size={16} /> <span>Cargar imagen</span></button>
                 <span className="tool-separator" />
-                <button className="ghost-tool" onClick={() => setShowMore((value) => !value)}><MoreHorizontal size={17} /> <span>Más</span></button>
+                <button className="ghost-tool" aria-expanded={showMore} aria-controls="lumen-more-options" onClick={() => setShowMore((value) => !value)}><MoreHorizontal size={17} /> <span>Más</span></button>
               </div>
               <button className="generate-button" onClick={runGeneration} disabled={isGenerating}>
                 {isGenerating ? <span className="loader" /> : <Sparkles size={17} />}
@@ -261,10 +261,8 @@ export default function Home() {
             </div>
           </div>
           {showMore && (
-            <div className="more-panel">
-              <span>Detalle</span><button className="tiny-select">Alto <ChevronDown size={13} /></button>
-              <span>Semilla</span><button className="tiny-select">Aleatoria <ChevronDown size={13} /></button>
-              <span>Contenido</span><button className="tiny-select">Seguro <ChevronDown size={13} /></button>
+            <div id="lumen-more-options" className="more-panel" role="note">
+              <span>Este prototipo crea arte vectorial abstracto local. No dispone de ajustes de IA, semillas configurables ni filtros automáticos de contenido.</span>
             </div>
           )}
           <div className="prompt-suggestions">
@@ -319,7 +317,7 @@ export default function Home() {
           <div className="quick-grid">{quickActions.map(({ key, label, detail, icon: Icon, accent }) => <button key={key} className="quick-card" onClick={() => chooseAction(key)}><span className={`quick-icon icon-${accent}`}><Icon size={19} /></span><span className="quick-content"><strong>{label}</strong><small>{detail}</small></span><ArrowUpRight size={16} className="quick-arrow" /></button>)}</div>
         </section>
 
-        <section className="inspiration-section" id="inspiration">
+        <section className="inspiration-section" id="inspiration" tabIndex={-1}>
           <div className="section-heading"><div><span className="section-kicker">04 / DESCUBRE</span><h2>Un poco de inspiración</h2></div><button className="view-all" onClick={() => toast("Galería de inspiración local")}>Explorar galería <ArrowUpRight size={15} /></button></div>
           <div className="inspiration-grid">{inspirations.map(({ label, icon: Icon, className, prompt: inspirationPrompt }) => <button className={`inspiration-card ${className}`} key={label} onClick={() => { setPrompt(inspirationPrompt); toast(`Idea cargada · ${label}`); }}><span className="inspiration-icon"><Icon size={18} /></span><span className="inspiration-label">{label}</span><ArrowUpRight size={15} /></button>)}</div>
         </section>
