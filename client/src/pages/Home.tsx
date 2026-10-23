@@ -159,6 +159,7 @@ export default function Home() {
       return;
     }
     setUploadedImage(URL.createObjectURL(file));
+    event.target.value = "";
     toast.success("Imagen cargada en tu navegador");
   };
 
@@ -211,7 +212,7 @@ export default function Home() {
             <p>Explora una idea, dale forma y llévala a tu lienzo. Todo sucede en tu navegador.</p>
           </div>
           <div className="hero-visual" aria-hidden="true">
-            <img src="/manus-storage/lumen-hero_f3544468.jpg" alt="" />
+            <div className="hero-visual-art" style={{ background: compositionStyle.background }} />
             <div className="hero-visual-label"><span>01</span><span>Materia / luz / forma</span></div>
           </div>
         </section>
@@ -306,7 +307,7 @@ export default function Home() {
 
         <section className="recent-section">
           <div className="section-heading"><div><span className="section-kicker">05 / REFERENCIAS</span><h2>Inspiraciones de ejemplo</h2></div><button className="view-all" onClick={() => toast("Biblioteca local · próximamente")}>Ver biblioteca <ArrowUpRight size={15} /></button></div>
-          <div className="recent-grid">{recentPrompts.map((item) => <button className="recent-card" key={item.title} onClick={() => { setPrompt(item.title); setStyle(item.style); }}><div className="recent-thumb" style={{ filter: item.filter, backgroundImage: "url('/manus-storage/lumen-hero_f3544468.jpg')" }}><span>{item.style}</span></div><div className="recent-meta"><strong>{item.title}</strong><span>{item.meta}</span><Copy size={14} /></div></button>)}</div>
+          <div className="recent-grid">{recentPrompts.map((item) => <button className="recent-card" key={item.title} onClick={() => { setPrompt(item.title); setStyle(item.style); }}><div className="recent-thumb" style={{ filter: item.filter, background: compositionBackground(item.title, palettes[item.style], 0) }}><span>{item.style}</span></div><div className="recent-meta"><strong>{item.title}</strong><span>{item.meta}</span><Copy size={14} /></div></button>)}</div>
         </section>
 
         <footer className="footer"><div className="footer-brand"><BrandMark /><span>Lumen Local Studio</span></div><span>Creado para explorar. Sin cuenta · sin API · sin enviar tus datos.</span><span>v0.1.0</span></footer>
