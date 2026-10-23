@@ -10,7 +10,8 @@
     "preview": "vite preview --host",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
-    "test": "vitest run client/src/lib/composition.test.ts"
+    "test": "vitest run client/src/lib/composition.test.ts",
+    "test:navigation": "node --experimental-strip-types --test client/src/lib/mobileNavigation.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
