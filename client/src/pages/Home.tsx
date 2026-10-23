@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { compositionBackground, compositionSvg, type CanvasAspect } from "../lib/composition";
+import { isMobileMenuDismissKey, nextMobileMenuState } from "../lib/mobileNavigation";
 import { toast } from "sonner";
 import {
   Aperture,
@@ -112,8 +113,24 @@ export default function Home() {
   const [showMore, setShowMore] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [activeRail, setActiveRail] = useState("create");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLButtonElement>(null);
+  const railRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedPalette = palettes[style];
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    railRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isMobileMenuDismissKey(event.key)) {
+        setMobileNavOpen(nextMobileMenuState(true, "close"));
+        mobileMenuRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [mobileNavOpen]);
 
   const compositionStyle = useMemo(() => ({
     background: compositionBackground(renderPrompt, selectedPalette, variation),
@@ -181,7 +198,8 @@ export default function Home() {
 
   return (
     <div className="app-shell">
-      <aside className="app-rail">
+      <a className="skip-link" href="#main-content">Saltar al contenido</a>
+      <aside id="lumen-primary-nav" ref={railRef} aria-label="Navegación principal" className={`app-rail ${mobileNavOpen ? "is-open" : ""}`}>
         <div className="rail-brand"><BrandMark /></div>
         <div className="rail-group">
           <AppIcon icon={Sparkles} label="Crear" active={activeRail === "create"} onClick={() => setActiveRail("create")} />
@@ -194,7 +212,7 @@ export default function Home() {
         </div>
       </aside>
 
-      <main className="main-stage">
+      <main id="main-content" tabIndex={-1} className="main-stage">
         <header className="topbar">
           <div className="mobile-brand"><BrandMark /><span>Lumen</span></div>
           <div className="breadcrumb"><span>Estudio</span><ChevronDown size={15} /></div>
@@ -312,7 +330,7 @@ export default function Home() {
 
         <footer className="footer"><div className="footer-brand"><BrandMark /><span>Lumen Local Studio</span></div><span>Creado para explorar. Sin cuenta · sin API · sin enviar tus datos.</span><span>v0.1.0</span></footer>
       </main>
-      <button className="mobile-menu" aria-label="Abrir menú"><Menu size={20} /></button>
+      <button ref={mobileMenuRef} type="button" className="mobile-menu" aria-label={mobileNavOpen ? "Cerrar menú" : "Abrir menú"} aria-expanded={mobileNavOpen} aria-controls="lumen-primary-nav" onClick={() => setMobileNavOpen((open) => nextMobileMenuState(open, "toggle"))}>{mobileNavOpen ? <X size={20} /> : <Menu size={20} />}</button>
     </div>
   );
 }
