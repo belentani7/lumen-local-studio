@@ -78,9 +78,9 @@ const inspirations = [
 ];
 
 const recentPrompts = [
-  { title: "Jardín de medianoche", meta: "hace 2 min", style: "Nocturno", filter: "hue-rotate(18deg) saturate(1.35)" },
-  { title: "Estudio de cerámica", meta: "ayer", style: "Editorial", filter: "sepia(.22) saturate(.9)" },
-  { title: "Horizonte líquido", meta: "ayer", style: "Luminoso", filter: "hue-rotate(155deg) saturate(1.25)" },
+  { title: "Jardín de medianoche", meta: "Ejemplo", style: "Nocturno", filter: "hue-rotate(18deg) saturate(1.35)" },
+  { title: "Estudio de cerámica", meta: "Ejemplo", style: "Editorial", filter: "sepia(.22) saturate(.9)" },
+  { title: "Horizonte líquido", meta: "Ejemplo", style: "Luminoso", filter: "hue-rotate(155deg) saturate(1.25)" },
 ];
 
 function BrandMark() {
@@ -97,6 +97,7 @@ function AppIcon({ icon: Icon, label, active = false, onClick }: { icon: typeof 
   return (
     <button className={`rail-button ${active ? "is-active" : ""}`} aria-label={label} title={label} onClick={onClick}>
       <Icon size={19} strokeWidth={active ? 2.25 : 1.8} />
+      <span className="rail-button-label">{label}</span>
     </button>
   );
 }
@@ -160,7 +161,7 @@ export default function Home() {
   const chooseAction = (action: ActionKey) => {
     if (action === "generate") {
       setMode("Imagen");
-      document.getElementById("prompt-box")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById("prompt-box")?.scrollIntoView({ behavior: "auto", block: "center" });
       return;
     }
     if (action === "video") setMode("Vídeo");
@@ -202,9 +203,9 @@ export default function Home() {
       <aside id="lumen-primary-nav" ref={railRef} aria-label="Navegación principal" className={`app-rail ${mobileNavOpen ? "is-open" : ""}`}>
         <div className="rail-brand"><BrandMark /></div>
         <div className="rail-group">
-          <AppIcon icon={Sparkles} label="Crear" active={activeRail === "create"} onClick={() => setActiveRail("create")} />
-          <AppIcon icon={Images} label="Mis creaciones" active={activeRail === "library"} onClick={() => { setActiveRail("library"); toast("Biblioteca local · próximamente"); }} />
-          <AppIcon icon={Grid2X2} label="Inspiración" active={activeRail === "inspire"} onClick={() => { setActiveRail("inspire"); document.getElementById("inspiration")?.scrollIntoView({ behavior: "smooth" }); }} />
+          <AppIcon icon={Sparkles} label="Crear" active={activeRail === "create"} onClick={() => { setActiveRail("create"); setMobileNavOpen(false); document.getElementById("prompt-box")?.scrollIntoView({ behavior: "auto" }); }} />
+          <AppIcon icon={Images} label="Mis creaciones" active={activeRail === "library"} onClick={() => { setMobileNavOpen(false); toast("La biblioteca local todavía no está disponible"); }} />
+          <AppIcon icon={Grid2X2} label="Inspiración" active={activeRail === "inspire"} onClick={() => { setActiveRail("inspire"); setMobileNavOpen(false); document.getElementById("inspiration")?.scrollIntoView({ behavior: "auto" }); }} />
         </div>
         <div className="rail-bottom">
           <AppIcon icon={Settings2} label="Ajustes" onClick={() => toast("Ajustes locales · próximamente")} />
@@ -217,7 +218,7 @@ export default function Home() {
           <div className="mobile-brand"><BrandMark /><span>Lumen</span></div>
           <div className="breadcrumb"><span>Estudio</span><ChevronDown size={15} /></div>
           <div className="topbar-actions">
-            <span className="offline-pill"><span className="status-dot" /> Sin conexión</span>
+            <span className="offline-pill"><span className="status-dot" /> Motor local</span>
             <button className="icon-button" aria-label="Buscar" onClick={() => toast("La búsqueda local estará disponible pronto")}><Search size={18} /></button>
             <button className="avatar avatar-small" aria-label="Perfil">LM</button>
           </div>
@@ -226,7 +227,7 @@ export default function Home() {
         <section className="hero-section">
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-line" /> ESTUDIO CREATIVO LOCAL</div>
-            <h1>Crear cualquier cosa<span className="title-mark">.</span></h1>
+            <h1>Crear luz y forma<span className="title-mark">.</span></h1>
             <p>Explora una idea, dale forma y llévala a tu lienzo. Todo sucede en tu navegador.</p>
           </div>
           <div className="hero-visual" aria-hidden="true">
@@ -276,7 +277,7 @@ export default function Home() {
           <div className="section-heading canvas-heading">
             <div><span className="section-kicker">02 / LIENZO</span><h2>Tu espacio de juego</h2></div>
             <div className="canvas-actions">
-              <span className="generation-status"><span className="status-dot blue-dot" /> {generatedAt}</span>
+              <span className="generation-status" role="status" aria-live="polite"><span className="status-dot blue-dot" /> {generatedAt}</span>
               <button className="small-icon-button" aria-label="Descargar composición" onClick={downloadComposition}><ArrowDownToLine size={17} /></button>
               <button className="small-icon-button" aria-label="Ampliar vista" onClick={() => toast("Vista ampliada · usa el zoom del navegador para explorar")}><ZoomIn size={17} /></button>
             </div>
@@ -302,11 +303,11 @@ export default function Home() {
             <aside className="canvas-controls">
               <div className="control-card">
                 <div className="control-label"><span>Estilo visual</span><Palette size={15} /></div>
-                <div className="style-grid">{Object.keys(palettes).map((item) => <button key={item} className={`style-chip ${style === item ? "selected" : ""}`} onClick={() => setStyle(item)}><span className="style-swatch" style={{ background: `linear-gradient(135deg, ${palettes[item].start}, ${palettes[item].end})` }} />{item}</button>)}</div>
+                <div className="style-grid">{Object.keys(palettes).map((item) => <button key={item} className={`style-chip ${style === item ? "selected" : ""}`} aria-pressed={style === item} onClick={() => setStyle(item)}><span className="style-swatch" style={{ background: `linear-gradient(135deg, ${palettes[item].start}, ${palettes[item].end})` }} />{item}</button>)}</div>
               </div>
               <div className="control-card">
                 <div className="control-label"><span>Proporción</span><Crop size={15} /></div>
-                <div className="aspect-grid">{(["1:1", "4:5", "16:9", "9:16"] as CanvasAspect[]).map((item) => <button key={item} className={`aspect-chip ${aspect === item ? "selected" : ""}`} onClick={() => setAspect(item)}><span className={`aspect-shape ratio-${item.replace(":", "-")}`} />{item}</button>)}</div>
+                <div className="aspect-grid">{(["1:1", "4:5", "16:9", "9:16"] as CanvasAspect[]).map((item) => <button key={item} className={`aspect-chip ${aspect === item ? "selected" : ""}`} aria-pressed={aspect === item} onClick={() => setAspect(item)}><span className={`aspect-shape ratio-${item.replace(":", "-")}`} />{item}</button>)}</div>
               </div>
               <div className="local-note"><Lightbulb size={16} /><span><strong>Motor vectorial sin IA</strong> · cada clic genera una nueva variación abstracta; no produce fotografías ni vídeo.</span></div>
             </aside>
@@ -328,7 +329,7 @@ export default function Home() {
           <div className="recent-grid">{recentPrompts.map((item) => <button className="recent-card" key={item.title} onClick={() => { setPrompt(item.title); setStyle(item.style); }}><div className="recent-thumb" style={{ filter: item.filter, background: compositionBackground(item.title, palettes[item.style], 0) }}><span>{item.style}</span></div><div className="recent-meta"><strong>{item.title}</strong><span>{item.meta}</span><Copy size={14} /></div></button>)}</div>
         </section>
 
-        <footer className="footer"><div className="footer-brand"><BrandMark /><span>Lumen Local Studio</span></div><span>Creado para explorar. Sin cuenta · sin API · sin enviar tus datos.</span><span>v0.1.0</span></footer>
+        <footer className="footer"><div className="footer-brand"><BrandMark /><span>Lumen Local Studio</span></div><span>Composiciones locales · sin cuenta · sin proveedores de generación.</span><span>v1.0.0</span></footer>
       </main>
       <button ref={mobileMenuRef} type="button" className="mobile-menu" aria-label={mobileNavOpen ? "Cerrar menú" : "Abrir menú"} aria-expanded={mobileNavOpen} aria-controls="lumen-primary-nav" onClick={() => setMobileNavOpen((open) => nextMobileMenuState(open, "toggle"))}>{mobileNavOpen ? <X size={20} /> : <Menu size={20} />}</button>
     </div>
