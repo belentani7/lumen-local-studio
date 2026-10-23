@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { safeSvgCaption, escapeSvgText } from "../lib/svgSafety";
 import {
   Aperture,
   ArrowDownToLine,
@@ -152,7 +153,7 @@ export default function Home() {
   };
 
   const downloadComposition = () => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900"><defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${selectedPalette.start}"/><stop offset="1" stop-color="${selectedPalette.end}"/></linearGradient><radialGradient id="glow"><stop stop-color="${selectedPalette.accent}" stop-opacity=".95"/><stop offset="1" stop-color="${selectedPalette.accent}" stop-opacity="0"/></radialGradient></defs><rect width="1600" height="900" fill="url(#bg)"/><circle cx="1160" cy="260" r="420" fill="url(#glow)" opacity=".68"/><circle cx="270" cy="780" r="250" fill="${selectedPalette.end}" opacity=".52"/><path d="M500 900C660 690 720 530 910 370C1050 252 1250 190 1600 90V900Z" fill="${selectedPalette.accent}" opacity=".12"/><text x="86" y="770" font-family="Georgia, serif" font-size="46" fill="white" opacity=".92">${prompt.replace(/[&<>]/g, "").slice(0, 54)}</text><text x="88" y="820" font-family="Arial, sans-serif" font-size="18" letter-spacing="3" fill="white" opacity=".6">LUMEN LOCAL · ${style.toUpperCase()}</text></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900"><defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${selectedPalette.start}"/><stop offset="1" stop-color="${selectedPalette.end}"/></linearGradient><radialGradient id="glow"><stop stop-color="${selectedPalette.accent}" stop-opacity=".95"/><stop offset="1" stop-color="${selectedPalette.accent}" stop-opacity="0"/></radialGradient></defs><rect width="1600" height="900" fill="url(#bg)"/><circle cx="1160" cy="260" r="420" fill="url(#glow)" opacity=".68"/><circle cx="270" cy="780" r="250" fill="${selectedPalette.end}" opacity=".52"/><path d="M500 900C660 690 720 530 910 370C1050 252 1250 190 1600 90V900Z" fill="${selectedPalette.accent}" opacity=".12"/><text x="86" y="770" font-family="Georgia, serif" font-size="46" fill="white" opacity=".92">${safeSvgCaption(prompt)}</text><text x="88" y="820" font-family="Arial, sans-serif" font-size="18" letter-spacing="3" fill="white" opacity=".6">LUMEN LOCAL · ${escapeSvgText(style.toUpperCase())}</text></svg>`;
     const blob = new Blob([svg], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
