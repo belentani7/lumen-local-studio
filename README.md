@@ -9,6 +9,8 @@ Lumen Local Studio es un prototipo creativo React + Vite y un servidor Express e
 - Carga opcional de imágenes PNG, JPEG o WebP (máximo 12 MB) para la **previsualización local**, con limpieza de URL temporal al reemplazar o cerrar el componente.
 - Una fotografía cargada **no** se inserta en el SVG exportado; la aplicación lo notifica.
 - Inspiraciones de ejemplo sin presentarlas como una biblioteca real de creaciones previas.
+- Navegación móvil operativa con Escape, retorno del foco, enlace de salto y botones seleccionados anunciados.
+- Se eliminó la analítica externa automática del HTML y el bloqueo de zoom; revisar las integraciones de desarrollo heredadas antes de publicar.
 - Página principal sin depender del antiguo activo externo de `/manus-storage`.
 
 ## Límites reales
@@ -21,6 +23,7 @@ Las acciones de vídeo, voz, relleno generativo, borrado por IA, autenticación 
 pnpm install --frozen-lockfile
 pnpm check
 pnpm test
+pnpm run test:navigation
 pnpm build
 pnpm start
 ```
