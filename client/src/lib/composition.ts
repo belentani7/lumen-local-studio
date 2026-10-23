@@ -46,8 +46,9 @@ export function compositionSvg(
   variation: number,
   styleName: string,
 ): string {
-  const [width, height] = CANVAS_SIZES[aspect];
-  if (!width || !height) throw new RangeError("Proporción de composición no válida");
+  const size = CANVAS_SIZES[aspect];
+  if (!size) throw new RangeError("Proporción de composición no válida");
+  const [width, height] = size;
   const g = compositionGeometry(prompt, variation);
   const one = { x: Math.round(width * g.primaryX / 100), y: Math.round(height * g.primaryY / 100) };
   const two = { x: Math.round(width * g.secondaryX / 100), y: Math.round(height * g.secondaryY / 100) };
