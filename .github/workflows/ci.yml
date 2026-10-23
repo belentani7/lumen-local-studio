@@ -28,6 +28,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: TypeScript
         run: pnpm run check
+      - name: SVG and project regression tests
+        run: pnpm exec vitest run --root . --maxWorkers=2 --minWorkers=1
       - name: Production build
         run: pnpm run build
       - name: Verify browser and server artifacts
