@@ -32,6 +32,7 @@ jobs:
         run: |
           pnpm run test
           pnpm run test:navigation
+          node --test tests/privacy-ui.test.mjs
       - name: Production build
         run: pnpm run build
       - name: Verify browser and server artifacts
