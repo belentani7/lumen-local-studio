@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { compositionBackground, compositionSvg, type CanvasAspect } from "../lib/composition";
 import { toast } from "sonner";
 import {
   Aperture,
@@ -58,7 +59,7 @@ const palettes: Record<string, Palette> = {
 };
 
 const quickActions: Array<{ key: ActionKey; label: string; detail: string; icon: typeof WandSparkles; accent: string }> = [
-  { key: "generate", label: "Generar imagen", detail: "Crea una imagen a partir de una indicación", icon: WandSparkles, accent: "blue" },
+  { key: "generate", label: "Composición local", detail: "Genera una composición vectorial abstracta sin IA", icon: WandSparkles, accent: "blue" },
   { key: "video", label: "Generar vídeo", detail: "Prepara una secuencia desde tu idea", icon: Film, accent: "orange" },
   { key: "expand", label: "Ampliar imagen", detail: "Extiende el lienzo más allá de sus bordes", icon: Expand, accent: "lavender" },
   { key: "fill", label: "Relleno generativo", detail: "Añade detalles a una composición", icon: Brush, accent: "mint" },
@@ -103,9 +104,11 @@ export default function Home() {
   const [mode, setMode] = useState<Mode>("Imagen");
   const [prompt, setPrompt] = useState("Un paisaje de montaña flotando sobre un mar de nubes, luz de amanecer...");
   const [style, setStyle] = useState("Auto");
-  const [aspect, setAspect] = useState("16:9");
+  const [aspect, setAspect] = useState<CanvasAspect>("16:9");
+  const [renderPrompt, setRenderPrompt] = useState(prompt);
+  const [variation, setVariation] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedAt, setGeneratedAt] = useState("Generación local lista");
+  const [generatedAt, setGeneratedAt] = useState("Composición vectorial local lista");
   const [showMore, setShowMore] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [activeRail, setActiveRail] = useState("create");
@@ -113,8 +116,13 @@ export default function Home() {
   const selectedPalette = palettes[style];
 
   const compositionStyle = useMemo(() => ({
-    background: `radial-gradient(circle at 72% 24%, ${selectedPalette.accent}55 0 9%, transparent 31%), radial-gradient(circle at 20% 82%, ${selectedPalette.end}77 0 3%, transparent 28%), linear-gradient(135deg, ${selectedPalette.start}, ${selectedPalette.end})`,
-  }), [selectedPalette]);
+    background: compositionBackground(renderPrompt, selectedPalette, variation),
+    aspectRatio: aspect.replace(":", " / "),
+  }), [renderPrompt, selectedPalette, variation, aspect]);
+
+  useEffect(() => {
+    return () => { if (uploadedImage) URL.revokeObjectURL(uploadedImage); };
+  }, [uploadedImage]);
 
   const runGeneration = () => {
     if (!prompt.trim()) {
@@ -125,8 +133,10 @@ export default function Home() {
     setGeneratedAt("Construyendo composición local…");
     window.setTimeout(() => {
       setIsGenerating(false);
-      setGeneratedAt(`Variación creada · ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
-      toast.success("Composición creada sin conexión a APIs");
+      setRenderPrompt(prompt.trim());
+      setVariation((current) => current + 1);
+      setGeneratedAt(`Variación vectorial creada · ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
+      toast.success("Variación vectorial creada localmente, sin IA ni APIs");
     }, 760);
   };
 
@@ -143,24 +153,30 @@ export default function Home() {
   const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Selecciona un archivo de imagen");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 12 * 1024 * 1024) {
+      toast.error("Selecciona JPG, PNG o WebP de máximo 12 MB");
+      event.target.value = "";
       return;
     }
     setUploadedImage(URL.createObjectURL(file));
+    event.target.value = "";
     toast.success("Imagen cargada en tu navegador");
   };
 
   const downloadComposition = () => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900"><defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${selectedPalette.start}"/><stop offset="1" stop-color="${selectedPalette.end}"/></linearGradient><radialGradient id="glow"><stop stop-color="${selectedPalette.accent}" stop-opacity=".95"/><stop offset="1" stop-color="${selectedPalette.accent}" stop-opacity="0"/></radialGradient></defs><rect width="1600" height="900" fill="url(#bg)"/><circle cx="1160" cy="260" r="420" fill="url(#glow)" opacity=".68"/><circle cx="270" cy="780" r="250" fill="${selectedPalette.end}" opacity=".52"/><path d="M500 900C660 690 720 530 910 370C1050 252 1250 190 1600 90V900Z" fill="${selectedPalette.accent}" opacity=".12"/><text x="86" y="770" font-family="Georgia, serif" font-size="46" fill="white" opacity=".92">${prompt.replace(/[&<>]/g, "").slice(0, 54)}</text><text x="88" y="820" font-family="Arial, sans-serif" font-size="18" letter-spacing="3" fill="white" opacity=".6">LUMEN LOCAL · ${style.toUpperCase()}</text></svg>`;
+    const svg = compositionSvg(renderPrompt, selectedPalette, aspect, variation, style);
     const blob = new Blob([svg], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "lumen-local-composicion.svg";
+    anchor.download = `lumen-local-${aspect.replace(":", "x")}.svg`;
+    document.body.appendChild(anchor);
     anchor.click();
-    URL.revokeObjectURL(url);
-    toast.success("Composición descargada");
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast.success(uploadedImage
+      ? "Composición SVG guardada (no incluye la fotografía cargada)"
+      : "Composición vectorial guardada con la proporción elegida");
   };
 
   return (
@@ -196,7 +212,7 @@ export default function Home() {
             <p>Explora una idea, dale forma y llévala a tu lienzo. Todo sucede en tu navegador.</p>
           </div>
           <div className="hero-visual" aria-hidden="true">
-            <img src="/manus-storage/lumen-hero_f3544468.jpg" alt="" />
+            <div className="hero-visual-art" style={{ background: compositionStyle.background }} />
             <div className="hero-visual-label"><span>01</span><span>Materia / luz / forma</span></div>
           </div>
         </section>
@@ -272,9 +288,9 @@ export default function Home() {
               </div>
               <div className="control-card">
                 <div className="control-label"><span>Proporción</span><Crop size={15} /></div>
-                <div className="aspect-grid">{["1:1", "4:5", "16:9", "9:16"].map((item) => <button key={item} className={`aspect-chip ${aspect === item ? "selected" : ""}`} onClick={() => setAspect(item)}><span className={`aspect-shape ratio-${item.replace(":", "-")}`} />{item}</button>)}</div>
+                <div className="aspect-grid">{(["1:1", "4:5", "16:9", "9:16"] as CanvasAspect[]).map((item) => <button key={item} className={`aspect-chip ${aspect === item ? "selected" : ""}`} onClick={() => setAspect(item)}><span className={`aspect-shape ratio-${item.replace(":", "-")}`} />{item}</button>)}</div>
               </div>
-              <div className="local-note"><Lightbulb size={16} /><span><strong>Motor local</strong> · esta demo crea variaciones visuales directamente en tu navegador.</span></div>
+              <div className="local-note"><Lightbulb size={16} /><span><strong>Motor vectorial sin IA</strong> · cada clic genera una nueva variación abstracta; no produce fotografías ni vídeo.</span></div>
             </aside>
           </div>
         </section>
@@ -290,8 +306,8 @@ export default function Home() {
         </section>
 
         <section className="recent-section">
-          <div className="section-heading"><div><span className="section-kicker">05 / RECIENTE</span><h2>Vuelve a tus ideas</h2></div><button className="view-all" onClick={() => toast("Biblioteca local · próximamente")}>Ver biblioteca <ArrowUpRight size={15} /></button></div>
-          <div className="recent-grid">{recentPrompts.map((item) => <button className="recent-card" key={item.title} onClick={() => { setPrompt(item.title); setStyle(item.style); }}><div className="recent-thumb" style={{ filter: item.filter, backgroundImage: "url('/manus-storage/lumen-hero_f3544468.jpg')" }}><span>{item.style}</span></div><div className="recent-meta"><strong>{item.title}</strong><span>{item.meta}</span><Copy size={14} /></div></button>)}</div>
+          <div className="section-heading"><div><span className="section-kicker">05 / REFERENCIAS</span><h2>Inspiraciones de ejemplo</h2></div><button className="view-all" onClick={() => toast("Biblioteca local · próximamente")}>Ver biblioteca <ArrowUpRight size={15} /></button></div>
+          <div className="recent-grid">{recentPrompts.map((item) => <button className="recent-card" key={item.title} onClick={() => { setPrompt(item.title); setStyle(item.style); }}><div className="recent-thumb" style={{ filter: item.filter, background: compositionBackground(item.title, palettes[item.style], 0) }}><span>{item.style}</span></div><div className="recent-meta"><strong>{item.title}</strong><span>{item.meta}</span><Copy size={14} /></div></button>)}</div>
         </section>
 
         <footer className="footer"><div className="footer-brand"><BrandMark /><span>Lumen Local Studio</span></div><span>Creado para explorar. Sin cuenta · sin API · sin enviar tus datos.</span><span>v0.1.0</span></footer>

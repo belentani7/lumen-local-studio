@@ -203,7 +203,12 @@ function vitePluginStorageProxy(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStorageProxy()];
+// Session replay and browser network logs may contain sensitive prompts.
+// Never enable the development log collector without explicit local opt-in.
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginStorageProxy()];
+if (process.env.LUMEN_ENABLE_DEBUG_COLLECTOR === "1") {
+  plugins.push(vitePluginManusDebugCollector());
+}
 
 export default defineConfig({
   plugins,
