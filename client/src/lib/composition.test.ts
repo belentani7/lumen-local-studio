@@ -37,6 +37,15 @@ describe("Lumen offline composition engine", () => {
     expect(escapeXml("a&b")).toBe("a&amp;b");
   });
 
+  it("exports valid XML when captions contain controls and malformed Unicode", () => {
+    const hostile = "Inicio\\u0000\\u0001\\u000B\\uFFFF\\uD800 < & fin 😀";
+    const text = hostile.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+    const svg = compositionSvg(text, palette, "1:1", 0, "Editorial");
+    expect(svg).toContain("Inicio &lt; &amp; fin 😀");
+    expect(svg).not.toMatch(/[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\uD800-\\uDFFF\\uFFFE\\uFFFF]/u);
+    expect(escapeXml("línea\\nsegunda".replace("\\n", "\n"))).toBe("línea\nsegunda");
+  });
+
   it("refuses an unsupported aspect instead of generating a misleading file", () => {
     expect(() => compositionSvg("Idea", palette, "broken" as never, 1, "Auto")).toThrow(RangeError);
   });
