@@ -8,7 +8,15 @@ export const CANVAS_SIZES: Record<CanvasAspect, readonly [number, number]> = {
   "9:16": [900, 1600],
 };
 export function escapeXml(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+  // XML 1.0 excludes most controls, U+FFFE/U+FFFF and unpaired surrogates.
+  // Sanitise before escaping: browsers must be able to open exported SVG files.
+  const xmlSafe = Array.from(value, (char) => {
+    const cp = char.codePointAt(0)!;
+    if ((cp < 0x20 && cp !== 0x09 && cp !== 0x0a && cp !== 0x0d) ||
+        (cp >= 0xd800 && cp <= 0xdfff) || cp === 0xfffe || cp === 0xffff) return "";
+    return char;
+  }).join("");
+  return xmlSafe.replace(/&/g, "&amp;").replace(/</g, "&lt;")
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
 }
